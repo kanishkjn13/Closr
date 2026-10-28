@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CLOSR Backend - Core App & Health Check API
 
 This repository contains the backend service for **CLOSR**, an AI-powered Customer Operations Agent, built with Python, Django, and Django REST Framework (DRF).
@@ -70,3 +71,6 @@ The server will start at `http://127.0.0.1:8000/`.
 6. **Body**: `none`.
 7. Click **Send**.
 8. Verify Status is `200 OK` and Response Body contains the expected JSON.
+=======
+# Closr
+>>>>>>> ed259004feecb09495e14c98a7dc0e2d54b8b520
