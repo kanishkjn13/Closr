@@ -1,76 +1,102 @@
-<<<<<<< HEAD
-# CLOSR Backend - Core App & Health Check API
+# Closr — AI-Powered Customer Operations Platform
 
-This repository contains the backend service for **CLOSR**, an AI-powered Customer Operations Agent, built with Python, Django, and Django REST Framework (DRF).
+An AI customer operations agent that turns patient conversations into completed actions (consultation bookings, rescheduling, cancellation, support tickets, CRM updates, and human handoff) with verified proof of every action.
 
 ---
 
-## 1. Quick Start Guide
+## 📁 Repository Structure
 
-### Prerequisites
-* Python 3.14+ (or Python 3.11+)
-* Windows PowerShell
-* MySQL 8.0 (installed and running)
+```
+Closr/
+├── backend/                  # Django REST Framework backend service
+│   ├── agent/                # OPERA AI Gemini agent service & multilingual processing
+│   ├── appointments/         # Scheduling, availability, bookings, rescheduling & cancellation
+│   ├── authentication/       # JWT auth, user registration, role-based profiles
+│   ├── closr/                # Project settings & URL routing
+│   ├── conversations/        # Multi-turn conversation persistence & action state
+│   ├── core/                 # Health check, permissions, auditing, analytics
+│   ├── crm/                  # Lead management & customer conversion
+│   ├── customers/            # Patient/Customer profile management
+│   ├── knowledge/            # Clinic knowledge base articles & retrieval
+│   ├── postman/              # Automated Postman collection & environment
+│   ├── tickets/              # Human escalation & support tickets
+│   ├── POSTMAN_TESTING_GUIDE.md # Step-by-step Postman testing workflow
+│   ├── manage.py
+│   └── requirements.txt
+│
+├── frontend/                 # React + Vite customer & clinic operations frontend
+│   ├── public/
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.js
+│
+├── .gitignore
+└── README.md
+```
 
-### Setup Virtual Environment
-If not already active, activate the existing virtual environment:
-```powershell
-# From the backend directory
+---
+
+## 🚀 Quick Start Guide
+
+### 1. Backend Setup (Django + DRF)
+
+```bash
+# Navigate to backend directory
+cd backend
+
+# Activate virtual environment
+# Windows:
 .\venv\Scripts\Activate.ps1
-```
+# macOS/Linux:
+source venv/bin/activate
 
-### Install Dependencies
-Dependencies are already installed in `venv`. If reinstalling on a new machine:
-```powershell
-pip install -r requirements.txt # or install django, djangorestframework, django-cors-headers, python-dotenv, pymysql, cryptography, google-genai
-```
+# Install dependencies
+pip install -r requirements.txt
 
-### Apply Default Migrations
-```powershell
+# Apply database migrations
 python manage.py migrate
-```
 
-### Run Automated Tests
-```powershell
+# Seed clinic knowledge & doctor accounts
+python manage.py seed_clinic_data
+
+# Run backend automated tests (37 tests)
 python manage.py test
-```
 
-### Start Development Server
-```powershell
+# Start development server
 python manage.py runserver
 ```
-The server will start at `http://127.0.0.1:8000/`.
+The backend API will be available at `http://127.0.0.1:8000/api/`.
 
----
+### 2. Frontend Setup (React + Vite)
 
-## 2. API Endpoints
+```bash
+# Navigate to frontend directory
+cd frontend
 
-### Health Check
-* **Route**: `/api/health/`
-* **Method**: `GET`
-* **Authentication**: None
-* **Expected Status**: `200 OK`
-* **Response Body**:
-```json
-{
-  "success": true,
-  "message": "CLOSR backend is running",
-  "service": "CLOSR API"
-}
+# Install dependencies
+npm install
+
+# Start Vite development server
+npm run dev
 ```
+The frontend UI will be available at `http://localhost:5173/`.
 
 ---
 
-## 3. Postman Verification Guide
+## 🧪 Postman & API Documentation
 
-1. **Agent Selection**: If using Postman Web, switch to the **Postman Desktop Agent** (local servers on `127.0.0.1` cannot be reached directly by Postman Cloud Agent).
-2. **Method**: Select `GET` from the dropdown.
-3. **URL**: Enter `http://127.0.0.1:8000/api/health/` *(do not type "GET" in the URL bar)*.
-4. **Headers**: Default headers (`Accept: */*`).
-5. **Authorization**: `No Auth`.
-6. **Body**: `none`.
-7. Click **Send**.
-8. Verify Status is `200 OK` and Response Body contains the expected JSON.
-=======
-# Closr
->>>>>>> ed259004feecb09495e14c98a7dc0e2d54b8b520
+A complete, automated Postman collection is located in `backend/postman/`:
+* **Collection**: `backend/postman/CLOSR_API.postman_collection.json`
+* **Environment**: `backend/postman/CLOSR_Local.postman_environment.json`
+* **Testing Guide**: [`backend/POSTMAN_TESTING_GUIDE.md`](backend/POSTMAN_TESTING_GUIDE.md)
+
+---
+
+## 🛡️ Key Features
+
+* **Multi-Turn AI Chatbot**: Real-time intent classification, parameter extraction, and slot availability checks in **English**, **Hindi**, and **Hinglish**.
+* **Medical Emergency Protocol**: Immediate safety detection for acute symptoms (chest pain, severe bleeding, difficulty breathing) routing patients to 112 / 102 emergency care.
+* **Transactional Booking with Locking**: Row-level locking (`select_for_update()`) preventing double-booking and race conditions.
+* **Rescheduling & Cancellation**: 2-step preview and transactional execution workflows.
+* **Strict Patient Data Isolation**: Object-level permissions preventing cross-patient conversation or appointment access.
+* **Audit Trail**: Every action, status change, and AI decision is logged in an immutable audit ledger.
