@@ -37,7 +37,7 @@ export const MessageComposer = ({ onSendMessage, onSendVoiceNote, onAttachAction
 
             {/* 2. Rounded Pill Text Input */}
             <div className="flex-1 relative flex items-center">
-              <input type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} onKeyDown={handleKeyDown} placeholder="Message ya voice note..." className="w-full h-10 px-4 text-xs sm:text-[13px] rounded-full bg-closr-card border border-closr-border text-closr-text placeholder:text-closr-text-muted/70 focus:outline-none focus:border-closr-forest focus:ring-1 focus:ring-closr-forest/20 transition-all shadow-xs"/>
+              <input type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} onKeyDown={handleKeyDown} placeholder="Type a message or record a voice note..." className="w-full h-10 px-4 text-xs sm:text-[13px] rounded-full bg-closr-card border border-closr-border text-closr-text placeholder:text-closr-text-muted/70 focus:outline-none focus:border-closr-forest focus:ring-1 focus:ring-closr-forest/20 transition-all shadow-xs"/>
             </div>
 
             {/* 3. Send or Microphone Button */}

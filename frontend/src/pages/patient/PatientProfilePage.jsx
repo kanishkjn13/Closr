@@ -15,6 +15,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { usePatientAuth } from '../../context/PatientAuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { patientService } from '../../services/patientService';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
@@ -23,21 +24,36 @@ import { Badge } from '../../components/ui/Badge';
 import { useToast } from '../../components/ui/Toast';
 
 export const PatientProfilePage = () => {
-  const { currentPatient, refreshPatient, logout } = usePatientAuth();
+  const { currentPatient, refreshPatient, logout: patientLogout } = usePatientAuth();
+  const { user: authUser, logout: mainLogout } = useAuth();
+  const activePatient = currentPatient || (authUser?.role === 'patient' ? authUser : null);
   const navigate = useNavigate();
   const toast = useToast();
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: currentPatient?.name || '',
-    phone: currentPatient?.phone || '',
-    email: currentPatient?.email || '',
-    address: currentPatient?.address || 'Indirapuram, Ghaziabad, UP',
-    emergencyContact: currentPatient?.emergencyContact || '+91 98110 33219 (Family)',
-    preferredCommunication: currentPatient?.preferredCommunication || 'sms',
+    name: activePatient?.name || '',
+    phone: activePatient?.phone || '',
+    email: activePatient?.email || '',
+    address: activePatient?.address || 'Indirapuram, Ghaziabad, UP',
+    emergencyContact: activePatient?.emergencyContact || '+91 98110 33219 (Family)',
+    preferredCommunication: activePatient?.preferredCommunication || 'sms',
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  React.useEffect(() => {
+    if (activePatient) {
+      setFormData({
+        name: activePatient.name || '',
+        phone: activePatient.phone || '',
+        email: activePatient.email || '',
+        address: activePatient.address || 'Indirapuram, Ghaziabad, UP',
+        emergencyContact: activePatient.emergencyContact || '+91 98110 33219 (Family)',
+        preferredCommunication: activePatient.preferredCommunication || 'sms',
+      });
+    }
+  }, [activePatient?.id, activePatient?.name, activePatient?.phone, activePatient?.email]);
 
   const validate = async () => {
     const errs = {};
@@ -73,16 +89,18 @@ export const PatientProfilePage = () => {
 
     setIsSubmitting(true);
     try {
-      await patientService.updatePatient(currentPatient.id, {
-        name: formData.name.trim(),
-        phone: formData.phone.trim(),
-        email: formData.email.trim(),
-        address: formData.address.trim(),
-        emergencyContact: formData.emergencyContact.trim(),
-        preferredCommunication: formData.preferredCommunication,
-      });
+      if (activePatient?.id) {
+        await patientService.updatePatient(activePatient.id, {
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          email: formData.email.trim(),
+          address: formData.address.trim(),
+          emergencyContact: formData.emergencyContact.trim(),
+          preferredCommunication: formData.preferredCommunication,
+        });
+      }
 
-      await refreshPatient();
+      if (refreshPatient) await refreshPatient();
       setIsEditing(false);
       toast.success('Profile Updated', 'Your personal details have been saved.');
     } catch (err) {
@@ -94,19 +112,20 @@ export const PatientProfilePage = () => {
 
   const handleCancel = () => {
     setFormData({
-      name: currentPatient?.name || '',
-      phone: currentPatient?.phone || '',
-      email: currentPatient?.email || '',
-      address: currentPatient?.address || 'Indirapuram, Ghaziabad, UP',
-      emergencyContact: currentPatient?.emergencyContact || '+91 98110 33219 (Family)',
-      preferredCommunication: currentPatient?.preferredCommunication || 'sms',
+      name: activePatient?.name || '',
+      phone: activePatient?.phone || '',
+      email: activePatient?.email || '',
+      address: activePatient?.address || 'Indirapuram, Ghaziabad, UP',
+      emergencyContact: activePatient?.emergencyContact || '+91 98110 33219 (Family)',
+      preferredCommunication: activePatient?.preferredCommunication || 'sms',
     });
     setErrors({});
     setIsEditing(false);
   };
 
-  const handleSignOut = () => {
-    logout();
+  const handleSignOut = async () => {
+    if (mainLogout) await mainLogout();
+    if (patientLogout) patientLogout();
     navigate('/patient/login');
   };
 
@@ -163,16 +182,16 @@ export const PatientProfilePage = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-closr-border">
           <div className="flex items-center gap-4">
             <Avatar
-              name={currentPatient?.name || 'Patient'}
+              name={activePatient?.name || 'Patient'}
               size="lg"
               className="bg-closr-forest text-white ring-4 ring-closr-sage/40"
             />
             <div>
               <h2 className="font-serif font-bold text-lg sm:text-xl text-closr-text">
-                {currentPatient?.name}
+                {activePatient?.name}
               </h2>
               <p className="text-xs text-closr-text-muted mt-0.5">
-                Patient ID: <span className="font-mono font-semibold text-closr-forest">{currentPatient?.id}</span>
+                Patient ID: <span className="font-mono font-semibold text-closr-forest">{activePatient?.id}</span>
               </p>
             </div>
           </div>
@@ -207,7 +226,7 @@ export const PatientProfilePage = () => {
                 </div>
               ) : (
                 <p className="text-sm font-semibold text-closr-text py-2 px-3 rounded-xl bg-closr-bg/50 border border-closr-border">
-                  {currentPatient?.name}
+                  {activePatient?.name}
                 </p>
               )}
             </div>
@@ -229,7 +248,7 @@ export const PatientProfilePage = () => {
                 </div>
               ) : (
                 <p className="text-sm font-semibold text-closr-text py-2 px-3 rounded-xl bg-closr-bg/50 border border-closr-border font-mono">
-                  {currentPatient?.phone}
+                  {activePatient?.phone}
                 </p>
               )}
             </div>
@@ -252,7 +271,7 @@ export const PatientProfilePage = () => {
                 </div>
               ) : (
                 <p className="text-sm font-semibold text-closr-text py-2 px-3 rounded-xl bg-closr-bg/50 border border-closr-border">
-                  {currentPatient?.email || 'Not provided'}
+                  {activePatient?.email || 'Not provided'}
                 </p>
               )}
             </div>

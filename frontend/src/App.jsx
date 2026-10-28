@@ -93,15 +93,17 @@ export const App = () => {
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>
 
-                {/* Legacy Direct Aliases to support all internal links */}
-                <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
-                <Route path="/break-it" element={<Navigate to="/admin/break-it" replace />} />
-                <Route path="/appointments" element={<Navigate to="/admin/appointments" replace />} />
-                <Route path="/patients" element={<Navigate to="/admin/patients" replace />} />
-                <Route path="/messages" element={<Navigate to="/admin/messages" replace />} />
-                <Route path="/analytics" element={<Navigate to="/admin/analytics" replace />} />
-                <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
-                <Route path="/notifications" element={<Navigate to="/admin/notifications" replace />} />
+                {/* Direct Root Module Routes (supporting notifications, search, modals, and query params) */}
+                <Route element={<AppLayout />}>
+                  <Route path="/dashboard" element={<HomePage />} />
+                  <Route path="/break-it" element={<BreakItPage />} />
+                  <Route path="/appointments" element={<AppointmentsPage />} />
+                  <Route path="/patients" element={<PatientsPage />} />
+                  <Route path="/messages" element={<MessagesPage />} />
+                  <Route path="/analytics" element={<AnalyticsPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
+                </Route>
               </Route>
 
               {/* Fallback 404 Route */}

@@ -103,7 +103,7 @@ export const MessageComposer = ({ onSendMessage, disabled = false, className, in
                 setText(e.target.value);
                 e.target.style.height = 'auto';
                 e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
-            }} onKeyDown={handleKeyDown} placeholder="Message ya voice note..." disabled={disabled} className="flex-1 max-h-28 bg-transparent text-sm text-closr-text placeholder:text-closr-text-muted/70 focus:outline-hidden resize-none py-1.5 px-1 leading-relaxed"/>
+            }} onKeyDown={handleKeyDown} placeholder="Type a message or record a voice note..." disabled={disabled} className="flex-1 max-h-28 bg-transparent text-sm text-closr-text placeholder:text-closr-text-muted/70 focus:outline-hidden resize-none py-1.5 px-1 leading-relaxed"/>
 
           {/* Voice note record button */}
           <button type="button" onClick={() => setIsRecording(true)} aria-label="Record voice note" className="p-2 text-closr-text-muted hover:text-closr-forest hover:bg-closr-sage/40 rounded-xl transition-colors closr-focus shrink-0">

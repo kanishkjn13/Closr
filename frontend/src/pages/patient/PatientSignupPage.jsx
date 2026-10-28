@@ -106,7 +106,7 @@ export const PatientSignupPage = () => {
     <div className="min-h-screen bg-closr-bg text-closr-text flex flex-col justify-between p-4 sm:p-6 lg:p-8">
       {/* Top Header */}
       <header className="max-w-4xl w-full mx-auto flex items-center justify-between pb-4">
-        <Link to="/patient/login" className="flex items-center gap-2.5 group">
+        <Link to="/" className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 rounded-xl bg-closr-forest text-white flex items-center justify-center font-serif font-bold text-xl shadow-xs">
             C
           </div>

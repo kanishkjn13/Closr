@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { mockPatients } from '../../data/mockPatients';
+import { patientService } from '../../services/patientService';
 import { appointmentService } from '../../services/appointmentService';
 import { AlertCircle, Plus } from 'lucide-react';
 export const AddAppointmentModal = ({ isOpen, onClose, onAppointmentCreated, defaultDate = '2026-10-29', }) => {
     const [patientMode, setPatientMode] = useState('existing');
-    const [selectedPatientId, setSelectedPatientId] = useState(mockPatients[0].id);
+    const [patientsList, setPatientsList] = useState([]);
+    const [selectedPatientId, setSelectedPatientId] = useState('');
     const [newPatientName, setNewPatientName] = useState('');
     const [newPatientPhone, setNewPatientPhone] = useState('');
     const [doctorName, setDoctorName] = useState('Dr. Sharma');
@@ -19,6 +20,18 @@ export const AddAppointmentModal = ({ isOpen, onClose, onAppointmentCreated, def
     const [conflictError, setConflictError] = useState('');
     const [validationErrors, setValidationErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            patientService.getPatients().then((pts) => {
+                setPatientsList(pts);
+                if (pts.length > 0 && !selectedPatientId) {
+                    setSelectedPatientId(pts[0].id);
+                }
+            });
+        }
+    }, [isOpen]);
+
     const timeSlots = [
         '4:30 PM',
         '5:00 PM',
@@ -38,7 +51,7 @@ export const AddAppointmentModal = ({ isOpen, onClose, onAppointmentCreated, def
         let patientName = '';
         let patientId = '';
         if (patientMode === 'existing') {
-            const p = mockPatients.find((item) => item.id === selectedPatientId);
+            const p = patientsList.find((item) => item.id === selectedPatientId) || patientsList[0];
             if (!p) {
                 errors.patient = 'Please select a patient';
             }
@@ -52,7 +65,6 @@ export const AddAppointmentModal = ({ isOpen, onClose, onAppointmentCreated, def
                 errors.newPatientName = 'Patient name is required';
             }
             patientName = newPatientName.trim();
-            patientId = `pat-${Date.now()}`;
         }
         if (!doctorName)
             errors.doctor = 'Doctor is required';
@@ -76,6 +88,17 @@ export const AddAppointmentModal = ({ isOpen, onClose, onAppointmentCreated, def
                 setIsSubmitting(false);
                 return;
             }
+
+            if (patientMode === 'new') {
+                const created = await patientService.createPatient({
+                    name: patientName,
+                    phone: newPatientPhone.trim() || '+91 98765 00000',
+                    email: `${patientName.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+                    status: 'active',
+                });
+                patientId = created.id;
+            }
+
             const newApt = await appointmentService.createAppointment({
                 patientId,
                 patientName,
@@ -132,7 +155,7 @@ export const AddAppointmentModal = ({ isOpen, onClose, onAppointmentCreated, def
           </div>
 
           {patientMode === 'existing' ? (<select value={selectedPatientId} onChange={(e) => setSelectedPatientId(e.target.value)} className="w-full text-xs sm:text-sm py-2.5 px-3 rounded-xl bg-closr-card border border-closr-border text-closr-text focus:outline-none focus:ring-1 focus:ring-closr-forest">
-              {mockPatients.map((p) => (<option key={p.id} value={p.id}>
+              {patientsList.map((p) => (<option key={p.id} value={p.id}>
                   {p.name} ({p.phone})
                 </option>))}
             </select>) : (<div className="grid grid-cols-2 gap-2">

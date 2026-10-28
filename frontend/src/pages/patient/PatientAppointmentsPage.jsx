@@ -21,8 +21,12 @@ import { RescheduleAppointmentModal } from '../../components/appointments/Resche
 import { CancelAppointmentModal } from '../../components/appointments/CancelAppointmentModal';
 import { cn } from '../../lib/utils';
 
+import { useAuth } from '../../context/AuthContext';
+
 export const PatientAppointmentsPage = () => {
   const { currentPatient } = usePatientAuth();
+  const { user: authUser } = useAuth();
+  const activePatient = currentPatient || (authUser?.role === 'patient' ? authUser : null);
   const toast = useToast();
 
   const [appointments, setAppointments] = useState([]);
@@ -37,17 +41,18 @@ export const PatientAppointmentsPage = () => {
   const [cancelAppointment, setCancelAppointment] = useState(null);
 
   const loadAppointments = useCallback(async () => {
-    if (!currentPatient?.id) return;
+    const patientId = activePatient?.id;
+    if (!patientId) return;
     setIsLoading(true);
     try {
-      const apts = await appointmentService.getAppointmentsByPatientId(currentPatient.id);
+      const apts = await appointmentService.getAppointmentsByPatientId(patientId);
       setAppointments(apts);
     } catch (err) {
       console.warn('Could not load patient appointments', err);
     } finally {
       setIsLoading(false);
     }
-  }, [currentPatient?.id]);
+  }, [activePatient?.id]);
 
   useEffect(() => {
     loadAppointments();
@@ -349,7 +354,7 @@ export const PatientAppointmentsPage = () => {
       <PatientBookAppointmentModal
         isOpen={isBookModalOpen}
         onClose={() => setIsBookModalOpen(false)}
-        currentPatient={currentPatient}
+        currentPatient={activePatient}
         onBookingComplete={() => {
           loadAppointments();
           setIsBookModalOpen(false);
