@@ -2,6 +2,7 @@ import { mockAnalyticsSummary, mockActivity, mockEscalations } from '../data/moc
 import { appointmentService } from './appointmentService';
 import { patientService } from './patientService';
 import { conversationService } from './conversationService';
+import { notificationService } from './notificationService';
 // Reference Anchor Date for Closr demo data operations: 2026-10-29
 export const DEMO_TODAY = '2026-10-29';
 export const analyticsService = {
@@ -14,12 +15,10 @@ export const analyticsService = {
         });
     },
     /**
-     * Retrieves the live AI activity timeline.
+     * Retrieves the synchronized live AI activity timeline from common event source.
      */
     async getActivityTimeline() {
-        return new Promise((resolve) => {
-            setTimeout(() => resolve([...mockActivity]), 40);
-        });
+        return notificationService.getActivityEvents();
     },
     /**
      * Retrieves active escalations requiring human intervention.

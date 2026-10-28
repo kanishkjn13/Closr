@@ -14,11 +14,11 @@ import { settingsService } from '../services/settingsService';
 export const SettingsPage = () => {
     const { onOpenMobileMenu } = useOutletContext();
     const [searchParams, setSearchParams] = useSearchParams();
-    // Active section management
-    const initialSection = searchParams.get('section') || 'profile';
-    const [activeSection, setActiveSection] = useState(['profile', 'receptionist', 'appointmentRules', 'notifications', 'escalationSafety', 'appearance', 'dataPrivacy'].includes(initialSection)
+    // Active section management - default to escalationSafety (AI Core & Patient Safety)
+    const initialSection = searchParams.get('section') || 'escalationSafety';
+    const [activeSection, setActiveSection] = useState(['escalationSafety', 'receptionist', 'appointmentRules', 'notifications', 'profile', 'appearance', 'dataPrivacy'].includes(initialSection)
         ? initialSection
-        : 'profile');
+        : 'escalationSafety');
     // Settings State
     const [settings, setSettings] = useState(() => settingsService.getSettings());
     // Update URL param when section changes

@@ -10,11 +10,12 @@ import { Modal } from '../components/ui/Modal';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { useToast } from '../components/ui/Toast';
-import { Phone, Clock, Calendar, User, ShieldAlert, Check } from 'lucide-react';
+import { Phone, Clock, Calendar, User, ShieldAlert, Check, Zap, ArrowRight } from 'lucide-react';
 import { mockAppointments } from '../data/mockAppointments';
 import { mockActivity, mockEscalations } from '../data/mockActivity';
 import { mockPatients } from '../data/mockPatients';
 import { appointmentService } from '../services/appointmentService';
+import { notificationService } from '../services/notificationService';
 export const HomePage = () => {
     const { onOpenMobileMenu } = useOutletContext();
     const navigate = useNavigate();
@@ -22,6 +23,7 @@ export const HomePage = () => {
     // State for interactive modals
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [appointments, setAppointments] = useState(mockAppointments);
+    const [activityEvents, setActivityEvents] = useState([]);
     const [isEscalationModalOpen, setIsEscalationModalOpen] = useState(false);
     const [isCallModalOpen, setIsCallModalOpen] = useState(false);
     const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
@@ -32,8 +34,16 @@ export const HomePage = () => {
             if (isMounted)
                 setAppointments(data);
         });
+        const loadEvents = async () => {
+            const evts = await notificationService.getActivityEvents();
+            if (isMounted)
+                setActivityEvents(evts);
+        };
+        loadEvents();
+        const unsub = notificationService.subscribe(loadEvents);
         return () => {
             isMounted = false;
+            unsub();
         };
     }, []);
     const activeEscalation = mockEscalations[0]; // ESC-310 (Ramesh K.)
@@ -49,8 +59,44 @@ export const HomePage = () => {
       {/* 1. Header with Date, Doctor Avatar, and Greeting */}
       <DashboardHeader onOpenMobileMenu={onOpenMobileMenu} date="Thu, Oct 29, 2026" doctorName="Dr. Sharma"/>
 
-      {/* 2. Three Summary Metric Cards */}
-      <MetricsGrid onOpenEscalationModal={() => setIsEscalationModalOpen(true)}/>
+      {/* 2. BREAK IT MODE Entry Banner */}
+      <div className="my-5 p-4 sm:p-5 rounded-2xl bg-closr-card border border-closr-border shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-closr-amber-bg text-closr-amber flex items-center justify-center shrink-0 border border-closr-amber/30">
+            <Zap className="w-5 h-5 fill-closr-amber/20" />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-serif font-bold text-sm sm:text-base text-closr-text">
+                BREAK IT MODE — AI Failure & Recovery Lab
+              </span>
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-closr-amber bg-closr-amber-bg px-2 py-0.5 rounded border border-closr-amber/30 uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-closr-amber animate-pulse" />
+                Demo Mode Active
+              </span>
+              <span className="text-[10px] text-closr-text-muted bg-closr-bg px-2 py-0.5 rounded border border-closr-border">
+                Simulated Demo Tests
+              </span>
+            </div>
+            <p className="text-xs text-closr-text-muted mt-1 leading-relaxed">
+              Stress-test the AI receptionist and observe how it handles failures.
+            </p>
+          </div>
+        </div>
+
+        <Button
+          variant="primary"
+          size="sm"
+          rightIcon={<ArrowRight className="w-4 h-4" />}
+          onClick={() => navigate('/break-it')}
+          className="shrink-0 self-start sm:self-auto shadow-soft"
+        >
+          Launch Failure Lab
+        </Button>
+      </div>
+
+      {/* 3. Three Summary Metric Cards */}
+      <MetricsGrid appointments={appointments} escalationsCount={1} onOpenEscalationModal={() => setIsEscalationModalOpen(true)}/>
 
       {/* 3. Full-width Appointments Table */}
       <AppointmentsCard appointments={appointments} onSelectAppointment={(apt) => setSelectedAppointment(apt)} doctorName="Dr. Sharma"/>
@@ -59,7 +105,7 @@ export const HomePage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 sm:gap-7 items-start">
         {/* Left Column: Activity Timeline (3/5 = 60%) */}
         <div className="lg:col-span-3">
-          <ActivityTimeline events={mockActivity} onSelectEscalation={() => setIsEscalationModalOpen(true)}/>
+          <ActivityTimeline events={activityEvents.length > 0 ? activityEvents : mockActivity} onSelectEscalation={() => setIsEscalationModalOpen(true)}/>
         </div>
 
         {/* Right Column: Quick Actions & Upcoming Reminders (2/5 = 40%) */}

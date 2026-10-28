@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { Home, Calendar, Users, MessageSquare, BarChart2, Bell, Settings, X, } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Home, Calendar, Users, MessageSquare, BarChart2, Bell, Settings, X, Zap, LogOut } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { notificationService } from '../../services/notificationService';
+import { useAuth } from '../../context/AuthContext';
 const navItems = [
-    { name: 'Home', to: '/', icon: Home },
-    { name: 'Appointments', to: '/appointments', icon: Calendar },
-    { name: 'Patients', to: '/patients', icon: Users },
-    { name: 'Messages', to: '/messages', icon: MessageSquare },
-    { name: 'Analytics', to: '/analytics', icon: BarChart2 },
-    { name: 'Notifications', to: '/notifications', icon: Bell, badgeKey: 'notifications' },
-    { name: 'Settings', to: '/settings', icon: Settings },
+    { name: 'Dashboard', to: '/admin/dashboard', icon: Home },
+    { name: 'Break It Lab', to: '/admin/break-it', icon: Zap },
+    { name: 'Appointments', to: '/admin/appointments', icon: Calendar },
+    { name: 'Patients', to: '/admin/patients', icon: Users },
+    { name: 'Messages', to: '/admin/messages', icon: MessageSquare },
+    { name: 'Analytics', to: '/admin/analytics', icon: BarChart2 },
+    { name: 'Notifications', to: '/admin/notifications', icon: Bell, badgeKey: 'notifications' },
+    { name: 'Settings', to: '/admin/settings', icon: Settings },
 ];
 export const ClosrLogo = ({ className }) => (<div className={cn('flex items-center gap-2.5 select-none', className)}>
     {/* Closr organic leaf emblem */}
@@ -26,12 +28,18 @@ export const ClosrLogo = ({ className }) => (<div className={cn('flex items-cent
     </span>
   </div>);
 export const Sidebar = ({ isOpen, onClose }) => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
     const [unreadCount, setUnreadCount] = useState(() => notificationService.getUnreadCount());
     useEffect(() => {
         return notificationService.subscribe(() => {
             setUnreadCount(notificationService.getUnreadCount());
         });
     }, []);
+    const handleStaffSignOut = async () => {
+        await logout();
+        navigate('/admin/login');
+    };
     return (<>
       {/* Mobile Backdrop */}
       {isOpen && (<div className="fixed inset-0 z-40 bg-closr-forest/20 backdrop-blur-sm lg:hidden transition-opacity" onClick={onClose} aria-hidden="true"/>)}
@@ -68,15 +76,30 @@ export const Sidebar = ({ isOpen, onClose }) => {
           </nav>
         </div>
 
-        {/* Clinic & Receptionist Indicator */}
-        <div className="pt-4 border-t border-closr-border/60">
+        {/* Clinic & Receptionist Indicator + Patient Portal link + Sign Out */}
+        <div className="pt-4 border-t border-closr-border/60 space-y-2">
           <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-closr-card/80 border border-closr-border/50 text-xs">
-            <span className="w-2 h-2 rounded-full bg-closr-success animate-pulse"/>
+            <span className="w-2 h-2 rounded-full bg-closr-success animate-pulse shrink-0"/>
             <div className="min-w-0">
-              <p className="font-semibold text-closr-text truncate">Saathi AI Active</p>
-              <p className="text-[11px] text-closr-text-muted">Dr. Sharma Clinic</p>
+              <p className="font-semibold text-closr-text truncate">{user?.name || 'Dr. Sharma'}</p>
+              <p className="text-[10px] text-closr-text-muted capitalize truncate">{user?.role || 'Staff'}</p>
             </div>
           </div>
+          <NavLink
+            to="/patient/login"
+            className="flex items-center justify-between px-3 py-2 rounded-xl bg-closr-sage/30 hover:bg-closr-sage/60 border border-closr-border/60 text-xs font-semibold text-closr-forest transition-colors"
+          >
+            <span>Patient Portal</span>
+            <span className="text-[10px] bg-white px-1.5 py-0.5 rounded border border-closr-border font-medium">Open &rarr;</span>
+          </NavLink>
+          <button
+            type="button"
+            onClick={handleStaffSignOut}
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-closr-danger hover:bg-closr-danger-bg rounded-xl transition-colors text-left"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Sign Out</span>
+          </button>
         </div>
       </aside>
     </>);

@@ -229,6 +229,24 @@ export const notificationService = {
         return newRecord;
     },
     /**
+     * Common event source: Returns synchronized clinic activity events
+     * for Home Timeline, Analytics, and Notifications views.
+     */
+    async getActivityEvents() {
+        const notifs = await this.getNotifications();
+        return notifs.map((n) => ({
+            id: n.id,
+            timestamp: n.timestamp,
+            title: n.title,
+            description: n.description,
+            category: n.category === 'escalations' ? 'escalation' : (n.category === 'appointments' ? 'booking' : (n.category === 'conversations' ? 'waitlist' : 'lead')),
+            status: n.priority === 'urgent' ? 'urgent' : (n.isRead ? 'completed' : 'info'),
+            relatedId: n.relatedBookingId || n.relatedEscalationId || n.relatedPatientId,
+            isRead: n.isRead,
+            actionRequired: n.actionRequired,
+        }));
+    },
+    /**
      * Subscribes a component to notification changes.
      */
     subscribe(callback) {
