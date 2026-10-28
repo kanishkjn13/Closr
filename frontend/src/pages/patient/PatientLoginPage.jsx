@@ -11,6 +11,7 @@ import {
   UserCheck 
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { usePatientAuth } from '../../context/PatientAuthContext';
 import { DEMO_PATIENT_ACCOUNTS } from '../../services/authService';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -18,6 +19,7 @@ import { useToast } from '../../components/ui/Toast';
 
 export const PatientLoginPage = () => {
   const { loginPatient, isAuthenticated, isPatient } = useAuth();
+  const { loginWithId } = usePatientAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
@@ -66,6 +68,14 @@ export const PatientLoginPage = () => {
         rememberMe,
       });
 
+      if (loginWithId && user?.id) {
+        try {
+          await loginWithId(user.id);
+        } catch (e) {
+          console.warn('Could not sync patient auth state', e);
+        }
+      }
+
       toast.success('Welcome Back', `Signed in as ${user.name}`);
       const destination = location.state?.from?.pathname || '/patient/dashboard';
       navigate(destination, { replace: true });
@@ -87,7 +97,7 @@ export const PatientLoginPage = () => {
     <div className="min-h-screen bg-closr-bg text-closr-text flex flex-col justify-between p-4 sm:p-6 lg:p-8">
       {/* Top Header */}
       <header className="max-w-4xl w-full mx-auto flex items-center justify-between pb-4">
-        <Link to="/patient/login" className="flex items-center gap-2.5 group">
+        <Link to="/" className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 rounded-xl bg-closr-forest text-white flex items-center justify-center font-serif font-bold text-xl shadow-xs">
             C
           </div>

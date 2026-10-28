@@ -13,6 +13,7 @@ import {
   Info
 } from 'lucide-react';
 import { usePatientAuth } from '../../context/PatientAuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { conversationService } from '../../services/conversationService';
 import { appointmentService } from '../../services/appointmentService';
 import { Avatar } from '../../components/ui/Avatar';
@@ -23,6 +24,8 @@ import { cn } from '../../lib/utils';
 
 export const PatientMessagesPage = () => {
   const { currentPatient } = usePatientAuth();
+  const { user: authUser } = useAuth();
+  const activePatient = currentPatient || (authUser?.role === 'patient' ? authUser : null);
   const toast = useToast();
   const messagesEndRef = useRef(null);
 
@@ -36,10 +39,10 @@ export const PatientMessagesPage = () => {
 
   // Load conversations for this patient
   const loadConversations = useCallback(async () => {
-    if (!currentPatient?.id) return;
+    if (!activePatient?.id) return;
     try {
       const allConvs = await conversationService.getConversations();
-      const patientConvs = allConvs.filter((c) => c.patientId === currentPatient.id);
+      const patientConvs = allConvs.filter((c) => c.patientId === activePatient.id);
       setConversations(patientConvs);
 
       if (patientConvs.length > 0) {
@@ -48,7 +51,7 @@ export const PatientMessagesPage = () => {
     } catch (err) {
       console.warn('Failed to load patient conversations', err);
     }
-  }, [currentPatient?.id]);
+  }, [activePatient?.id]);
 
   useEffect(() => {
     loadConversations();
@@ -65,8 +68,8 @@ export const PatientMessagesPage = () => {
 
       // Load matching appointment if any
       const conv = conversations.find((c) => c.id === convId);
-      if (conv?.bookingId) {
-        const apts = await appointmentService.getAppointmentsByPatientId(currentPatient.id);
+      if (conv?.bookingId && activePatient?.id) {
+        const apts = await appointmentService.getAppointmentsByPatientId(activePatient.id);
         const match = apts.find((a) => a.bookingCode === conv.bookingId);
         setPatientAppointment(match || null);
       }
@@ -75,7 +78,7 @@ export const PatientMessagesPage = () => {
     } finally {
       setIsLoadingMessages(false);
     }
-  }, [conversations, currentPatient?.id]);
+  }, [conversations, activePatient?.id]);
 
   useEffect(() => {
     if (selectedConvId) {

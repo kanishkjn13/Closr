@@ -28,17 +28,17 @@ export const NotFoundPage = () => {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Button variant="primary" size="md" onClick={() => navigate('/')} className="w-full sm:w-auto flex items-center justify-center gap-2">
             <Home className="w-4 h-4"/>
-            <span>Back to Dashboard</span>
+            <span>Back to Home</span>
           </Button>
 
-          <Button variant="outline" size="md" onClick={() => navigate('/appointments')} className="w-full sm:w-auto flex items-center justify-center gap-2">
+          <Button variant="outline" size="md" onClick={() => navigate('/patient/dashboard')} className="w-full sm:w-auto flex items-center justify-center gap-2">
             <Calendar className="w-4 h-4"/>
-            <span>Appointments</span>
+            <span>Patient Portal</span>
           </Button>
 
-          <Button variant="ghost" size="md" onClick={() => navigate('/receptionist')} className="w-full sm:w-auto flex items-center justify-center gap-2 text-closr-forest">
+          <Button variant="ghost" size="md" onClick={() => navigate('/admin/dashboard')} className="w-full sm:w-auto flex items-center justify-center gap-2 text-closr-forest">
             <MessageSquare className="w-4 h-4"/>
-            <span>AI Receptionist</span>
+            <span>Admin Dashboard</span>
           </Button>
         </div>
 

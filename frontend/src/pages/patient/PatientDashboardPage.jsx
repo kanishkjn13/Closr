@@ -17,6 +17,7 @@ import {
   Info
 } from 'lucide-react';
 import { usePatientAuth } from '../../context/PatientAuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { appointmentService } from '../../services/appointmentService';
 import { conversationService } from '../../services/conversationService';
 import { notificationService } from '../../services/notificationService';
@@ -31,6 +32,8 @@ import { AppointmentDetailsModal } from '../../components/appointments/Appointme
 
 export const PatientDashboardPage = () => {
   const { currentPatient } = usePatientAuth();
+  const { user: authUser } = useAuth();
+  const activePatient = currentPatient || (authUser?.role === 'patient' ? authUser : null);
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -45,30 +48,31 @@ export const PatientDashboardPage = () => {
   const [rescheduleAppointment, setRescheduleAppointment] = useState(null);
   const [cancelAppointment, setCancelAppointment] = useState(null);
 
-  // Load data for current patient
+  // Load data for active patient
   const loadPatientData = useCallback(async () => {
-    if (!currentPatient?.id) return;
+    const patientId = activePatient?.id;
+    if (!patientId) return;
     setIsLoading(true);
     try {
       const [allApts, allConvs, allNotifs] = await Promise.all([
-        appointmentService.getAppointmentsByPatientId(currentPatient.id),
+        appointmentService.getAppointmentsByPatientId(patientId),
         conversationService.getConversations(),
         notificationService.getNotifications(),
       ]);
 
       setAppointments(allApts);
 
-      const patientConvs = allConvs.filter((c) => c.patientId === currentPatient.id);
+      const patientConvs = allConvs.filter((c) => c.patientId === patientId);
       setConversations(patientConvs);
 
-      const patientNotifs = allNotifs.filter((n) => n.relatedPatientId === currentPatient.id);
+      const patientNotifs = allNotifs.filter((n) => n.relatedPatientId === patientId);
       setNotifications(patientNotifs);
     } catch (err) {
       console.warn('Error loading patient dashboard data', err);
     } finally {
       setIsLoading(false);
     }
-  }, [currentPatient?.id]);
+  }, [activePatient?.id]);
 
   useEffect(() => {
     loadPatientData();
@@ -97,7 +101,7 @@ export const PatientDashboardPage = () => {
     return conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
   }, [conversations]);
 
-  const patientFirstName = currentPatient?.name?.split(' ')[0] || 'Patient';
+  const patientFirstName = activePatient?.name?.split(' ')[0] || 'Patient';
 
   // Handle appointment actions
   const handleAppointmentRescheduled = (updated) => {
@@ -478,7 +482,7 @@ export const PatientDashboardPage = () => {
       <PatientBookAppointmentModal
         isOpen={isBookModalOpen}
         onClose={() => setIsBookModalOpen(false)}
-        currentPatient={currentPatient}
+        currentPatient={activePatient}
         onBookingComplete={() => {
           loadPatientData();
           setIsBookModalOpen(false);
